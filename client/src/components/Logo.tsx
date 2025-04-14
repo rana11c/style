@@ -1,4 +1,5 @@
 import React from "react";
+import logoSrc from "../assets/logo.svg";
 
 interface LogoProps {
   className?: string;
@@ -6,10 +7,13 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ className = "" }) => {
   return (
-    <h1 className={`text-xl font-bold ${className}`}>
-      <span className="text-accent">Styler</span>
-      <span className="text-primary">ستايلر</span>
-    </h1>
+    <div className={`flex items-center gap-2 ${className}`}>
+      <img src={logoSrc} alt="Styler Logo" className="h-10 w-10" />
+      <h1 className="text-xl font-bold">
+        <span className="text-primary ml-1">ستايلر</span>
+        <span className="text-accent text-sm block">Styler</span>
+      </h1>
+    </div>
   );
 };
 
