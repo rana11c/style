@@ -20,7 +20,9 @@ export interface AIOutfitResponse {
       category: ClothingCategory;
       description: string;
       color: Color;
+      image?: string; // URL للصورة أو Base64 للصورة
     }[];
+    outfitImage?: string; // صورة كاملة للإطلالة
     imagePrompt?: string;
   };
   error?: string;

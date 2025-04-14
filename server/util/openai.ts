@@ -1,5 +1,6 @@
 import { AIOutfitResponse } from "../../client/src/types";
 import { ClothingItem, ClothingCategory, Color } from "@shared/schema";
+import { getClothingItemImage, generateOutfitImage, svgToDataUrl } from "./imageGenerator";
 
 // Helper function to get clothing based on temperature range
 const getWeatherBasedClothing = (
@@ -9,64 +10,149 @@ const getWeatherBasedClothing = (
   categories: ClothingCategory[]; 
   colors: Color[];
   descriptions: string[];
+  isRainy: boolean;
+  isCold: boolean;
+  isHot: boolean;
 } => {
   let categories: ClothingCategory[] = [];
   let colors: Color[] = [];
   let descriptions: string[] = [];
+  let isRainy = weatherCondition.toLowerCase().includes("rain") || 
+                weatherCondition.includes("مطر") || 
+                weatherCondition.includes("أمطار");
   
-  // Temperature based logic
-  if (temperature < 10) {
-    // Cold weather
-    categories = ["jackets", "jackets", "pants", "shoes"]; // Using available categories
-    colors = ["black", "gray", "blue"]; // Using available colors
+  let isCold = temperature < 15;
+  let isHot = temperature > 30;
+  
+  // Temperature based logic - محسن مع اختيارات أكثر تطوراً
+  if (temperature < 5) {
+    // جو شديد البرودة
+    categories = ["jackets", "jackets", "pants", "shoes", "accessories"]; 
+    colors = ["black", "gray", "blue", "brown", "red"]; 
+    descriptions = [
+      "معطف شتوي سميك",
+      "سترة صوفية دافئة",
+      "بنطلون قماش سميك",
+      "حذاء شتوي مقاوم للماء",
+      "وشاح دافئ"
+    ];
+  } else if (temperature < 10) {
+    // جو بارد جداً
+    categories = ["jackets", "shirts", "pants", "shoes", "accessories"];
+    colors = ["black", "blue", "gray", "brown", "white"];
     descriptions = [
       "معطف شتوي دافئ",
-      "سترة صوفية",
-      "بنطلون قماش سميك",
-      "حذاء شتوي مريح"
+      "قميص بأكمام طويلة",
+      "بنطلون جينز سميك",
+      "حذاء شتوي مريح",
+      "قبعة صوفية"
     ];
-  } else if (temperature < 20) {
-    // Cool weather
+  } else if (temperature < 15) {
+    // جو بارد
     categories = ["jackets", "shirts", "pants", "shoes"];
-    colors = ["blue", "green", "brown"];
+    colors = ["brown", "green", "blue", "black"];
     descriptions = [
-      "جاكيت خفيف",
+      "جاكيت دافئ",
       "قميص بأكمام طويلة",
       "بنطلون جينز",
       "حذاء رياضي"
     ];
-  } else if (temperature < 30) {
-    // Warm weather
-    categories = ["shirts", "pants", "shoes"];
-    colors = ["white", "blue", "blue"];
+  } else if (temperature < 20) {
+    // جو معتدل يميل للبرودة
+    categories = ["jackets", "shirts", "pants", "shoes"];
+    colors = ["blue", "white", "black", "brown"];
     descriptions = [
-      "تيشيرت قطني",
-      "بنطلون خفيف",
-      "حذاء رياضي مريح"
+      "جاكيت خفيف",
+      "قميص قطني",
+      "بنطلون جينز مريح",
+      "حذاء رياضي"
     ];
-  } else {
-    // Hot weather
+  } else if (temperature < 25) {
+    // جو معتدل
     categories = ["shirts", "pants", "shoes"];
     colors = ["white", "blue", "brown"];
     descriptions = [
+      "قميص قطني بأكمام قصيرة",
+      "بنطلون خفيف",
+      "حذاء رياضي مريح"
+    ];
+  } else if (temperature < 30) {
+    // جو دافئ
+    categories = ["shirts", "pants", "shoes"];
+    colors = ["white", "blue", "blue"];
+    descriptions = [
       "تيشيرت قطني خفيف",
+      "بنطلون قصير",
+      "حذاء رياضي خفيف"
+    ];
+  } else if (temperature < 35) {
+    // جو حار
+    categories = ["shirts", "pants", "shoes"];
+    colors = ["white", "blue", "brown"];
+    descriptions = [
+      "تيشيرت قطني خفيف جداً",
       "شورت قصير",
       "صندل مريح"
     ];
+  } else {
+    // جو شديد الحرارة
+    categories = ["shirts", "pants", "shoes"];
+    colors = ["white", "white", "white"];
+    descriptions = [
+      "تيشيرت قطني فضفاض",
+      "شورت قصير جداً",
+      "صندل خفيف"
+    ];
   }
 
-  // Weather condition adjustments
-  if (weatherCondition.includes("rain") || weatherCondition.includes("مطر")) {
-    categories = categories.map(c => c === "shoes" ? "shoes" : c);
+  // تعديلات بناءً على حالة الطقس
+  if (isRainy) {
+    // تعديلات لحالات المطر
+    categories = categories.map(c => {
+      if (c === "jackets" && !categories.includes("jackets")) {
+        return "jackets";
+      }
+      return c;
+    });
+    
+    if (!categories.includes("jackets")) {
+      categories.splice(0, 0, "jackets");
+      colors.splice(0, 0, "blue");
+      descriptions.splice(0, 0, "جاكيت مقاوم للماء");
+    }
+    
     descriptions = descriptions.map(d => {
       if (d.includes("حذاء")) {
         return "حذاء مقاوم للماء";
+      } else if (d.includes("صندل")) {
+        return "حذاء مغلق مقاوم للماء";
       }
       return d;
     });
   }
 
-  return { categories, colors, descriptions };
+  // تعديلات إضافية للطقس
+  if (weatherCondition.toLowerCase().includes("snow") || weatherCondition.includes("ثلج")) {
+    // تعديلات لحالات الثلج
+    categories = ["jackets", "jackets", "pants", "shoes", "accessories"];
+    colors = ["black", "gray", "blue", "black", "red"];
+    descriptions = [
+      "معطف شتوي سميك",
+      "سترة صوفية دافئة",
+      "بنطلون شتوي سميك",
+      "حذاء ثلجي مقاوم للماء",
+      "قفازات وقبعة صوفية"
+    ];
+  } else if (weatherCondition.toLowerCase().includes("wind") || weatherCondition.includes("رياح")) {
+    // تعديلات لحالات الرياح
+    if (!categories.includes("jackets")) {
+      categories.splice(0, 0, "jackets");
+      colors.splice(0, 0, "blue");
+      descriptions.splice(0, 0, "جاكيت مقاوم للرياح");
+    }
+  }
+
+  return { categories, colors, descriptions, isRainy, isCold, isHot };
 };
 
 export async function generateOutfitRecommendation(
@@ -76,17 +162,57 @@ export async function generateOutfitRecommendation(
   userClothingItems?: ClothingItem[]
 ): Promise<AIOutfitResponse> {
   try {
-    const { categories, colors, descriptions } = getWeatherBasedClothing(temperature, weatherCondition);
+    const { categories, colors, descriptions, isRainy, isCold, isHot } = getWeatherBasedClothing(temperature, weatherCondition);
     
-    // Create a basic outfit based on weather
+    // توليد الصور لكل قطعة ملابس
+    const outfitItems = await Promise.all(categories.map(async (category, index) => {
+      const color = colors[index % colors.length];
+      const description = descriptions[index] || `قطعة من فئة ${category}`;
+      
+      // توليد صورة SVG لقطعة الملابس
+      const itemSvg = await getClothingItemImage(
+        category,
+        color,
+        description,
+        weatherCondition
+      );
+      
+      // تحويل SVG إلى Data URL
+      const imageUrl = svgToDataUrl(itemSvg);
+      
+      return {
+        category,
+        description,
+        color,
+        image: imageUrl
+      };
+    }));
+    
+    // توليد صورة للإطلالة كاملة
+    const outfitSvg = generateOutfitImage(outfitItems);
+    const outfitImageUrl = svgToDataUrl(outfitSvg);
+    
+    // إضافة معلومات سياقية للوصف بناءً على التحليل
+    let contextualDescription = `إطلالة مريحة ومناسبة للطقس ${weatherCondition} ودرجة حرارة ${temperature}°C. `;
+    
+    if (isCold) {
+      contextualDescription += "هذه الإطلالة مصممة لتوفير الدفء في الطقس البارد مع الحفاظ على الأناقة. ";
+    } else if (isHot) {
+      contextualDescription += "اخترنا لك قطع خفيفة ومريحة لمساعدتك على مواجهة الطقس الحار. ";
+    }
+    
+    if (isRainy) {
+      contextualDescription += "تم تضمين قطع مقاومة للماء لحمايتك من المطر. ";
+    }
+    
+    contextualDescription += "تم اختيار الألوان المتناسقة لضمان إطلالة أنيقة ومتكاملة.";
+    
+    // Create a basic outfit based on weather with images
     const outfit = {
       name: `إطلالة مناسبة لـ ${temperature}°C و${weatherCondition}`,
-      description: `إطلالة مريحة ومناسبة للطقس ${weatherCondition} ودرجة حرارة ${temperature}°C. تم اختيار قطع تناسب هذه الظروف الجوية لتوفير الراحة والأناقة.`,
-      items: categories.map((category, index) => ({
-        category,
-        description: descriptions[index] || `قطعة من فئة ${category}`,
-        color: colors[index % colors.length]
-      }))
+      description: contextualDescription,
+      items: outfitItems,
+      outfitImage: outfitImageUrl
     };
     
     return {
@@ -192,7 +318,38 @@ export async function generateOutfitForSpecificOccasion(
   userClothingItems?: ClothingItem[]
 ): Promise<AIOutfitResponse> {
   try {
-    const outfit = getOccasionBasedOutfit(occasion, preferences);
+    // الحصول على الإطلالة المناسبة للمناسبة
+    const baseOutfit = getOccasionBasedOutfit(occasion, preferences);
+    
+    // توليد الصور لكل قطعة ملابس في الإطلالة
+    const outfitItems = await Promise.all(baseOutfit.items.map(async (item) => {
+      // توليد صورة SVG لقطعة الملابس
+      const itemSvg = await getClothingItemImage(
+        item.category,
+        item.color,
+        item.description,
+        undefined // لا يوجد طقس محدد للمناسبة
+      );
+      
+      // تحويل SVG إلى Data URL
+      const imageUrl = svgToDataUrl(itemSvg);
+      
+      return {
+        ...item,
+        image: imageUrl
+      };
+    }));
+    
+    // توليد صورة للإطلالة كاملة
+    const outfitSvg = generateOutfitImage(outfitItems);
+    const outfitImageUrl = svgToDataUrl(outfitSvg);
+    
+    const outfit = {
+      name: baseOutfit.name,
+      description: baseOutfit.description,
+      items: outfitItems,
+      outfitImage: outfitImageUrl
+    };
     
     return {
       success: true,
@@ -301,11 +458,54 @@ export async function generateOutfitFromWardrobeItems(
     }
 
     // Generate a suitable outfit from the user's wardrobe
-    const outfit = createOutfitFromWardrobe(clothingItems, occasion, weather);
+    const baseOutfit = createOutfitFromWardrobe(clothingItems, occasion, weather);
+    
+    // توليد الصور لكل قطعة ملابس في الإطلالة
+    const outfitItems = await Promise.all(baseOutfit.items.map(async (item) => {
+      // توليد صورة SVG لقطعة الملابس
+      const itemSvg = await getClothingItemImage(
+        item.category,
+        item.color,
+        item.description,
+        weather?.condition
+      );
+      
+      // تحويل SVG إلى Data URL
+      const imageUrl = svgToDataUrl(itemSvg);
+      
+      return {
+        ...item,
+        image: imageUrl
+      };
+    }));
+    
+    // توليد صورة للإطلالة كاملة
+    const outfitSvg = generateOutfitImage(outfitItems);
+    const outfitImageUrl = svgToDataUrl(outfitSvg);
+    
+    // إنشاء الإطلالة النهائية مع الصور
+    const enhancedOutfit = {
+      name: baseOutfit.name,
+      description: baseOutfit.description,
+      items: outfitItems,
+      outfitImage: outfitImageUrl
+    };
+    
+    // إضافة بعض المعلومات الإضافية للوصف
+    let enhancedDescription = baseOutfit.description;
+    if (weather) {
+      enhancedDescription += " تم اختيار هذه القطع لتناسب درجة الحرارة والظروف الجوية الحالية.";
+    }
+    if (occasion) {
+      enhancedDescription += ` تم مراعاة مناسبة ${occasion} عند تكوين هذه الإطلالة.`;
+    }
     
     return {
       success: true,
-      outfit
+      outfit: {
+        ...enhancedOutfit,
+        description: enhancedDescription
+      }
     };
   } catch (error) {
     console.error("Error generating outfit from wardrobe items:", error);
