@@ -9,6 +9,36 @@ interface OutfitRecommendationProps {
   onRetry: () => void;
 }
 
+// تحويل اسم الفئة إلى العربية
+const arabicCategoryName = (category: string): string => {
+  const categoryNames: Record<string, string> = {
+    "shirts": "قميص",
+    "pants": "بنطلون",
+    "shoes": "حذاء",
+    "jackets": "جاكيت",
+    "accessories": "إكسسوار"
+  };
+  return categoryNames[category] || category;
+};
+
+// تحويل اسم اللون إلى العربية
+const arabicColorName = (color: string): string => {
+  const colorNames: Record<string, string> = {
+    "white": "أبيض",
+    "black": "أسود",
+    "blue": "أزرق",
+    "red": "أحمر",
+    "green": "أخضر",
+    "yellow": "أصفر",
+    "gray": "رمادي",
+    "brown": "بني",
+    "purple": "بنفسجي",
+    "orange": "برتقالي",
+    "pink": "وردي"
+  };
+  return colorNames[color] || color;
+};
+
 const OutfitRecommendation: React.FC<OutfitRecommendationProps> = ({
   outfit,
   loading,
@@ -57,6 +87,17 @@ const OutfitRecommendation: React.FC<OutfitRecommendationProps> = ({
         </button>
       </div>
       
+      {/* صورة الإطلالة الكاملة إذا كانت متوفرة */}
+      {outfit.outfit?.outfitImage && (
+        <div className="mb-4 flex justify-center">
+          <img 
+            src={outfit.outfit.outfitImage} 
+            alt="الإطلالة كاملة" 
+            className="border rounded-lg max-h-64 object-contain"
+          />
+        </div>
+      )}
+      
       <div className="bg-primary/10 rounded-lg p-4 mb-4">
         <h4 className="font-bold mb-2">{outfit.outfit?.name}</h4>
         <p className="text-sm">{outfit.outfit?.description}</p>
@@ -65,10 +106,22 @@ const OutfitRecommendation: React.FC<OutfitRecommendationProps> = ({
       <div className="space-y-4">
         {outfit.outfit?.items.map((item, index) => (
           <div key={index} className="flex items-center p-3 border rounded-lg">
-            <div className={`w-8 h-8 rounded-full bg-${item.color} mr-3`}></div>
+            {/* عرض صورة العنصر إذا كانت متوفرة، وإلا استعمل مربع ملون */}
+            {item.image ? (
+              <div className="h-16 w-16 mr-3 flex-shrink-0">
+                <img 
+                  src={item.image} 
+                  alt={item.description} 
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className={`w-8 h-8 rounded-full bg-${item.color} mr-3 flex-shrink-0`}></div>
+            )}
             <div>
-              <p className="font-semibold">{item.category}</p>
+              <p className="font-semibold">{arabicCategoryName(item.category)}</p>
               <p className="text-sm text-gray-600">{item.description}</p>
+              <p className="text-xs text-gray-500">{arabicColorName(item.color)}</p>
             </div>
           </div>
         ))}
