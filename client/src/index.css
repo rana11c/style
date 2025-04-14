@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  :root {
+    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 348 100% 71%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 348 100% 71%;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  /* RTL support for Arabic */
+  html[dir="rtl"] {
+    text-align: right;
+  }
+
+  html[dir="rtl"] .flex-row {
+    @apply flex-row-reverse;
+  }
+
+  html[dir="rtl"] .mr-1 {
+    margin-left: 0.25rem;
+    margin-right: 0;
+  }
+
+  html[dir="rtl"] .mr-2 {
+    margin-left: 0.5rem;
+    margin-right: 0;
+  }
+
+  html[dir="rtl"] .mr-3 {
+    margin-left: 0.75rem;
+    margin-right: 0;
+  }
+
+  html[dir="rtl"] .ml-1 {
+    margin-right: 0.25rem;
+    margin-left: 0;
+  }
+
+  html[dir="rtl"] .ml-2 {
+    margin-right: 0.5rem;
+    margin-left: 0;
+  }
+
+  html[dir="rtl"] .ml-3 {
+    margin-right: 0.75rem;
+    margin-left: 0;
+  }
+
+  html[dir="rtl"] .space-x-2 > * + * {
+    margin-right: 0.5rem;
+    margin-left: 0;
+  }
+
+  html[dir="rtl"] .space-x-4 > * + * {
+    margin-right: 1rem;
+    margin-left: 0;
+  }
+}
+
+@layer components {
+  .styler-card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+  }
+
+  .styler-input {
+    @apply w-full bg-primary/20 text-accent rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+
+  .styler-btn-primary {
+    @apply bg-primary text-white rounded-lg py-3 font-semibold hover:bg-primary/90 transition-colors;
+  }
+
+  .styler-btn-secondary {
+    @apply bg-white border border-gray-200 rounded-full px-4 py-1 text-sm hover:border-primary hover:text-primary transition-colors;
+  }
+
+  .styler-btn-active {
+    @apply bg-primary text-white rounded-full px-4 py-1 text-sm font-semibold;
+  }
+
+  .styler-badge {
+    @apply absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-lg;
+  }
+}
